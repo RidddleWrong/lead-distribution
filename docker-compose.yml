@@ -1,0 +1,43 @@
+services:
+
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: lead_distribution_app
+        working_dir: /var/www
+        volumes:
+            - .:/var/www
+        ports:
+            - "8000:8000"
+        depends_on:
+            postgres:
+                condition: service_healthy
+        environment:
+            DB_CONNECTION: pgsql
+            DB_HOST: postgres
+            DB_PORT: 5432
+            DB_DATABASE: lead_distribution
+            DB_USERNAME: postgres
+            DB_PASSWORD: postgres
+
+    postgres:
+        image: postgres:16
+        container_name: lead_distribution_postgres
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: lead_distribution
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", 'pg_isready -U postgres -d lead_distribution']
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
+volumes:
+    postgres_data:
