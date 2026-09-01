@@ -35,6 +35,11 @@ class ManagerStatisticsSqlTest extends TestCase
             'status' => LeadStatus::DONE,
         ]);
 
+        $reopenedLead = Lead::factory()->create([
+            'manager_id' => $manager->id,
+            'status' => LeadStatus::DONE,
+        ]);
+
         LeadStatusHistory::create([
             'lead_id' => $doneLead->id,
             'from_status' => LeadStatus::NEW,
@@ -44,6 +49,34 @@ class ManagerStatisticsSqlTest extends TestCase
 
         LeadStatusHistory::create([
             'lead_id' => $doneLead->id,
+            'from_status' => LeadStatus::IN_PROGRESS,
+            'to_status' => LeadStatus::DONE,
+            'created_at' => now()->subHours(2),
+        ]);
+
+        LeadStatusHistory::create([
+            'lead_id' => $reopenedLead->id,
+            'from_status' => LeadStatus::NEW,
+            'to_status' => LeadStatus::IN_PROGRESS,
+            'created_at' => now()->subHours(6),
+        ]);
+
+        LeadStatusHistory::create([
+            'lead_id' => $reopenedLead->id,
+            'from_status' => LeadStatus::IN_PROGRESS,
+            'to_status' => LeadStatus::DONE,
+            'created_at' => now()->subHours(5),
+        ]);
+
+        LeadStatusHistory::create([
+            'lead_id' => $reopenedLead->id,
+            'from_status' => LeadStatus::DONE,
+            'to_status' => LeadStatus::IN_PROGRESS,
+            'created_at' => now()->subHours(4),
+        ]);
+
+        LeadStatusHistory::create([
+            'lead_id' => $reopenedLead->id,
             'from_status' => LeadStatus::IN_PROGRESS,
             'to_status' => LeadStatus::DONE,
             'created_at' => now()->subHours(2),
@@ -66,7 +99,12 @@ class ManagerStatisticsSqlTest extends TestCase
         );
 
         $this->assertEquals(
-            1,
+            '03:00:00',
+            $managerResult->average_time_in_work
+        );
+
+        $this->assertEquals(
+            2,
             $managerResult->completed_leads_last_30_days
         );
     }

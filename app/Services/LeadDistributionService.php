@@ -11,10 +11,11 @@ use App\Models\Manager;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-class LeadDistributionService
+readonly class LeadDistributionService
 {
     public function __construct(
-        private readonly DistributionStrategy $strategy,
+        private DistributionStrategy $strategy,
+        private LeadStatusService    $leadStatusService,
     ) {
     }
 
@@ -70,16 +71,13 @@ class LeadDistributionService
         $lead = $distribution->lead;
         $manager = $distribution->manager;
 
-        $oldStatus = $lead->status;
-
         $lead->manager_id = $manager->id;
-        $lead->status = LeadStatus::IN_PROGRESS;
         $lead->save();
 
-        $lead->statusHistories()->create([
-            'from_status' => $oldStatus,
-            'to_status' => LeadStatus::IN_PROGRESS,
-        ]);
+        $this->leadStatusService->changeStatus(
+            $lead,
+            LeadStatus::IN_PROGRESS,
+        );
 
         LeadDistributed::dispatch(
             $lead,

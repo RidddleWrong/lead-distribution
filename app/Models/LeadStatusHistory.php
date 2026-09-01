@@ -17,6 +17,7 @@ class LeadStatusHistory extends Model
         'lead_id',
         'from_status',
         'to_status',
+        'created_at',
     ];
 
     protected function casts(): array
