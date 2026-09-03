@@ -27,6 +27,7 @@ readonly class LeadDistributionService
         $managers = Manager::query()
             ->where('is_active', true)
             ->withOpenLeadsCount()
+            ->orderBy('id')
             ->get();
 
         $loads = $managers
